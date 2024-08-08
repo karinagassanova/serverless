@@ -3,8 +3,6 @@ org: bluefinpaymentsystems
 # "app" enables Serverless Framework Dashboard features and sharing them with other Services.
 app: start
 # "service" is the name of this project. This will also be added to your AWS resource names.
-
-
 service: justproject
 
 provider:
@@ -49,7 +47,6 @@ functions:
           path: /
           method: post
 
-
   getCustomers:
     handler: getCustomers.getCustomers
     events:
@@ -57,12 +54,12 @@ functions:
           path: /customers
           method: get
 
-addNumbers:
-  handler: handler.addNumbers
-  events:
-    - httpApi:
-        path: /add
-        method: post
+  addNumbers:  # Make sure this is correctly indented under "functions"
+    handler: handler.addNumbers
+    events:
+      - httpApi:
+          path: /add
+          method: post
 
 resources:
   Resources:
@@ -77,5 +74,3 @@ resources:
           - AttributeName: primary_key
             KeyType: HASH
         TableName: ${self:service}-customerTable-${sls:stage}
-
-      
