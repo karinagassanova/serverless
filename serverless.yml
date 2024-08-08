@@ -35,6 +35,12 @@ functions:
           path: /
           method: get
 
+  sample:
+    handler: handler.sample
+    events:
+      - httpApi:
+          path: /sample
+          method: get
 
   createCustomer:
     handler: createCustomer.createCustomer
