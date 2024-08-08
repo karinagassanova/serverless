@@ -1,5 +1,3 @@
-// handler.js
-
 'use strict';
 
 module.exports.getProduct = (event, context, callback) => {
@@ -35,6 +33,9 @@ module.exports.sample = (event, context, callback) => {
     }),
   };
 
+  callback(null, response);  // Missing callback added here
+};
+
 module.exports.hello = (event, context, callback) => {
 
   const response = {
@@ -50,6 +51,7 @@ module.exports.hello = (event, context, callback) => {
 
   callback(null, response);
 };
+
 module.exports.createProduct = (event, context, callback) => {
 
   // Do work to create Product
