@@ -10,6 +10,7 @@ module.exports.getProduct = (event, context, callback) => {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       product: product
@@ -27,13 +28,14 @@ module.exports.sample = (event, context, callback) => {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       message: "Sample Message"
     }),
   };
 
-  callback(null, response);  // Missing callback added here
+  callback(null, response);
 };
 
 module.exports.hello = (event, context, callback) => {
@@ -43,6 +45,7 @@ module.exports.hello = (event, context, callback) => {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       message: "Hello World"
@@ -62,6 +65,7 @@ module.exports.createProduct = (event, context, callback) => {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       product: product
