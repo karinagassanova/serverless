@@ -20,6 +20,21 @@ module.exports.getProduct = (event, context, callback) => {
 
   callback(null, response);
 };
+
+// New sample endpoint
+module.exports.sample = (event, context, callback) => {
+
+  const response = {
+    statusCode: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+    },
+    body: JSON.stringify({
+      message: "Sample Message"
+    }),
+  };
+
 module.exports.hello = (event, context, callback) => {
 
   const response = {
