@@ -1,17 +1,30 @@
-# "org" ensures this Service is used with the correct Serverless Framework Access Key.
 org: bluefinpaymentsystems
-# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
 app: start
-# "service" is the name of this project. This will also be added to your AWS resource names.
 service: justproject
 
 provider:
-  httpApi:
-    cors: true
   name: aws
   runtime: nodejs20.x
   environment:
     DYNAMODB_CUSTOMER_TABLE: ${self:service}-customerTable-${sls:stage}
+  httpApi:
+    authorizers:
+      customAuthorizer:
+        type: request
+        functionName: authorizerFunc
+    cors:
+      allowedOrigins:
+        - http://localhost:64789
+
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - OPTIONS
+        - GET
+        - POST
+        - PATCH
+        - DELETE
 
 iam:
   role:
@@ -26,40 +39,91 @@ iam:
         Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
 
 functions:
+
+  postToWebhook:
+    handler: handler.postToWebhook
+    events:
+      - httpApi:
+          method: post
+          path: /post-webhook
+
+  simple:
+    handler: handler.simple
+    events:
+      - httpApi:
+          method: PATCH
+          path: /elo
+
+  extended:
+    handler: handler.extended
+    events:
+      - httpApi:
+          method: POST
+          path: /post/just/to/this/path
+
+  catchAllAny:
+    handler: index.catchAllAny
+    events:
+      - httpApi:
+          method: '*'
+          path: '*'
+
+  catchAllMethod:
+    handler: handler.catchAllMethod
+    events:
+      - httpApi:
+          method: '*'
+          path: /any/method
+
+  params:
+    handler: handler.params
+    events:
+      - httpApi:
+          method: GET
+          path: /get/for/any/{param}
+
   hello:
     handler: handler.hello
     events:
       - httpApi:
-          path: /
           method: get
+          path: /hello
+          authorizer:
+            name: customAuthorizer
+
+  authorizerFunc:
+    handler: authorizer.handler
 
   sample:
     handler: handler.sample
     events:
       - httpApi:
-          path: /sample
           method: get
+          path: /sample
 
   createCustomer:
     handler: createCustomer.createCustomer
     events:
       - httpApi:
-          path: /
           method: post
+          path: /
+
 
   getCustomers:
     handler: getCustomers.getCustomers
     events:
       - httpApi:
-          path: /customers
           method: get
+          path: /customers
 
-  addNumbers:  # Make sure this is correctly indented under "functions"
+  addNumbers:
     handler: handler.addNumbers
     events:
       - httpApi:
-          path: /add
           method: post
+          path: /add
+
+
 
 resources:
   Resources:
