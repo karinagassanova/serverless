@@ -8,21 +8,15 @@ provider:
   environment:
     DYNAMODB_CUSTOMER_TABLE: ${self:service}-customerTable-${sls:stage}
   httpApi:
-    authorizers:
-      customAuthorizer:
-        type: request
-        functionName: authorizerFunc
     cors:
       allowedOrigins:
-        - http://localhost:64789
-
-      allowedHeaders:
-        - Content-Type
-        - Authorization
+        - http://localhost:4200
+      allowedHeaders: null
       allowedMethods:
         - OPTIONS
         - GET
         - POST
+        - PUT
         - PATCH
         - DELETE
 
@@ -39,20 +33,19 @@ iam:
         Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
 
 functions:
-
-  postToWebhook:
-    handler: handler.postToWebhook
+  tokenHandler:
+    handler: handler.tokenHandler
     events:
       - httpApi:
-          method: post
-          path: /post-webhook
+          method: POST
+          path: /token/handle
 
-  simple:
-    handler: handler.simple
+  detokenizeHandler:
+    handler: handler.detokenizeHandler
     events:
       - httpApi:
-          method: PATCH
-          path: /elo
+          method: POST
+          path: /token/detokenize
 
   extended:
     handler: handler.extended
@@ -60,70 +53,6 @@ functions:
       - httpApi:
           method: POST
           path: /post/just/to/this/path
-
-  catchAllAny:
-    handler: index.catchAllAny
-    events:
-      - httpApi:
-          method: '*'
-          path: '*'
-
-  catchAllMethod:
-    handler: handler.catchAllMethod
-    events:
-      - httpApi:
-          method: '*'
-          path: /any/method
-
-  params:
-    handler: handler.params
-    events:
-      - httpApi:
-          method: GET
-          path: /get/for/any/{param}
-
-  hello:
-    handler: handler.hello
-    events:
-      - httpApi:
-          method: get
-          path: /hello
-          authorizer:
-            name: customAuthorizer
-
-  authorizerFunc:
-    handler: authorizer.handler
-
-  sample:
-    handler: handler.sample
-    events:
-      - httpApi:
-          method: get
-          path: /sample
-
-  createCustomer:
-    handler: createCustomer.createCustomer
-    events:
-      - httpApi:
-          method: post
-          path: /
-
-
-  getCustomers:
-    handler: getCustomers.getCustomers
-    events:
-      - httpApi:
-          method: get
-          path: /customers
-
-  addNumbers:
-    handler: handler.addNumbers
-    events:
-      - httpApi:
-          method: post
-          path: /add
-
-
 
 resources:
   Resources:

@@ -1,146 +1,88 @@
 'use strict';
-const https = require('https');
+const axios = require('axios');
 
-module.exports.postToWebhook = (event, context, callback) => {
-  const postData = JSON.stringify({ key: 'value' }); // Customize the payload if needed
+module.exports.tokenHandler = async (event) => {
+  try {
+    const requestBody = JSON.parse(event.body);
+    const { bfid, username, password } = requestBody;
 
-  const options = {
-    hostname: 'webhook.site',
-    port: 443,
-    path: '/16231f4c-21bb-4de0-902e-62ed4de07610/test',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(postData)
-    }
-  };
-
-  const req = https.request(options, (res) => {
-    let data = '';
-
-    res.on('data', (chunk) => {
-      data += chunk;
-    });
-
-    res.on('end', () => {
-      const response = {
-        statusCode: 200,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          message: "POST request completed successfully",
-          result: JSON.parse(data)
-        }),
+    if (!username || !password || !bfid) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Username, password, and bfid are required' })
       };
+    }
 
-      callback(null, response);
-    });
-  });
+    // Create Basic Auth header
+    const authHeader = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
 
-  req.on('error', (e) => {
-    const response = {
-      statusCode: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: "Error occurred",
-        error: e.message
-      }),
+    // Make POST request to external API
+    const response = await axios.post(
+        'https://secure-cert.shieldconex.com/api/tokenization/read',
+        { bfid: bfid }, // Payload
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authHeader
+          }
+        }
+    );
+
+    // Return the response
+    return {
+      statusCode: response.status,
+      body: JSON.stringify(response.data)
     };
 
-    callback(null, response);
-  });
-
-  req.write(postData);
-  req.end();
-};
-module.exports.getProduct = (event, context, callback) => {
-
-  // Do work to retrieve Product
-  const product = retrieveProduct(event);
-
-  const response = {
-    statusCode: 200,
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      product: product
-    }),
-  };
-
-  callback(null, response);
+  } catch (error) {
+    // Handle error response
+    return {
+      statusCode: error.response ? error.response.status : 500,
+      body: JSON.stringify({ error: error.message })
+    };
+  }
 };
 
-// New sample endpoint
-module.exports.sample = (event, context, callback) => {
+module.exports.detokenizeHandler = async (event) => {
+  try {
+    const requestBody = JSON.parse(event.body);
+    const { bfid, values, username, password } = requestBody;
 
-  const response = {
-    statusCode: 200,
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      message: "Sample Message"
-    }),
-  };
+    if (!bfid || !values || !username || !password) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'bfid, values, username, and password are required' })
+      };
+    }
 
-  callback(null, response);
-};
+    // Create Basic Auth header
+    const authHeader = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
+    console.log("Test",bfid,values)
 
-module.exports.hello = (event, context, callback) => {
+    // Make POST request to external API
+    const response = await axios.post(
+        'https://secure-cert.shieldconex.com/api/tokenization/detokenize',
 
-  const response = {
-    statusCode: 200,
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      message: "Hello World"
-    }),
-  };
+        { bfid, values },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authHeader
+          }
+        }
+    );
 
-  callback(null, response);
-};
+    // Return the detokenized data
+    return {
+      statusCode: response.status,
+      body: JSON.stringify(response.data)
+    };
 
-// addNumbers endpoint
-module.exports.addNumbers = (event, context, callback) => {
-  const body = JSON.parse(event.body);  // Parse the incoming request body
-  const num1 = body.num1;
-  const num2 = body.num2;
-
-  // Calculate the sum of the two numbers
-  const sum = num1 + num2;
-
-  const response = {
-    statusCode: 200,
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      result: sum
-    }),
-  };
-
-  callback(null, response);
-};
-
-module.exports.createProduct = (event, context, callback) => {
-
-  // Do work to create Product
-  const product = createProduct(event);
-
-  const response = {
-    statusCode: 200,
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      product: product
-    }),
-  };
-
-  callback(null, response);
+  } catch (error) {
+    // Handle error response
+    return {
+      statusCode: error.response ? error.response.status : 500,
+      body: JSON.stringify({ error: error.message })
+    };
+  }
 };
